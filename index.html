@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>황진이 시조 & 사설시조 수업용 인터랙티브 학습 앱</title>
+    <style>
+        :root {
+            --primary-color: #3F51B5;
+            --secondary-color: #5C6BC0;
+            --accent-color: #FF5722;
+            --bg-color: #F4F6F9;
+            --card-bg: #FFFFFF;
+            --text-color: #333333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; padding: 20px; }
+        
+        header { text-align: center; margin-bottom: 25px; }
+        header h1 { color: var(--primary-color); font-size: 2.1rem; margin-bottom: 8px; }
+        header p { color: #666; font-size: 1rem; }
+
+        .container { max-width: 960px; margin: 0 auto; }
+
+        /* Tab Navigation */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; min-width: 130px; padding: 12px 6px; border: none; background: #E0E0E0; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: center; color: var(--text-color); outline: none; }
+        .tab-btn:hover { background: #C5CAE9; }
+        .tab-btn.active { background: var(--primary-color) !important; color: white !important; }
+
+        /* Card Section */
+        .content-card { background: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; display: none; }
+        .content-card.active { display: block !important; }
+
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        h2 { border-bottom: 3px solid var(--primary-color); padding-bottom: 8px; margin-bottom: 18px; color: var(--primary-color); font-size: 1.5rem; }
+        h3 { color: var(--secondary-color); margin: 0; font-size: 1.2rem; border-left: 4px solid var(--secondary-color); padding-left: 8px; }
+
+        /* Toggle Button Controls */
+        .btn-group { display: flex; gap: 8px; }
+        .btn-toggle { background-color: #E8EAF6; color: var(--primary-color); border: 1.5px solid var(--primary-color); padding: 6px 14px; border-radius: 20px; font-size: 0.88rem; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
+        .btn-toggle:hover { background-color: var(--primary-color); color: white; }
+
+        /* Table Design */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; }
+        th, td { border: 1px solid #E0E0E0; padding: 12px; text-align: left; }
+        th { background: #E8EAF6; color: #1A237E; font-weight: bold; text-align: center; }
+
+        /* Student Input Area */
+        .trans-input { width: 100%; padding: 8px 10px; border: 1px solid #CCC; border-radius: 6px; font-size: 0.95rem; font-family: inherit; resize: vertical; min-height: 50px; background: #FFF8E1; margin-bottom: 6px; }
+        .btn-check-trans { background-color: #3F51B5; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; cursor: pointer; display: inline-block; }
+        .btn-check-trans:hover { background-color: #303F9F; }
+        .model-answer { margin-top: 6px; padding: 10px 12px; background: #E8F5E9; border-left: 4px solid #4CAF50; border-radius: 4px; color: #2E7D32; font-weight: 500; font-size: 0.95rem; display: none; }
+
+        /* Interactive Blank Pill (Click to Reveal Text) */
+        .blank {
+            position: relative;
+            display: inline-block;
+            background-color: #9FA8DA !important;
+            border: 1px solid var(--secondary-color);
+            color: transparent !important;
+            padding: 2px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            font-weight: bold;
+            vertical-align: middle;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .blank.revealed {
+            background-color: #E8F5E9 !important;
+            border: 1px solid #4CAF50 !important;
+            color: #2E7D32 !important;
+        }
+
+        /* Detail List */
+        .analysis-list { list-style: none; padding: 0; margin-top: 10px; }
+        .analysis-list li { background: #FAFAFA; border: 1px solid #EEEEEE; padding: 12px 15px; margin-bottom: 8px; border-radius: 6px; }
+        .analysis-list li strong { color: var(--primary-color); }
+        .sub-list { margin-top: 5px; padding-left: 20px; color: #555; }
+
+        /* Quiz Form */
+        .quiz-item { margin-bottom: 25px; padding: 20px; background: #FAFAFA; border-radius: 8px; border: 1px solid #E0E0E0; }
+        .quiz-item label { font-weight: bold; display: block; margin-bottom: 10px; line-height: 1.5; font-size: 1.05rem; }
+        .input-text { width: 100%; padding: 12px; border: 1px solid #CCC; border-radius: 6px; font-size: 1rem; margin-bottom: 12px; background: #FFF; font-family: inherit; }
+        
+        .btn-submit { background: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; }
+        .btn-submit:hover { opacity: 0.9; }
+
+        .feedback { margin-top: 12px; padding: 15px; border-radius: 6px; display: none; font-weight: 500; }
+        .feedback.correct { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+        .feedback.incorrect { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>황진이 시조 / 사설시조 학생용 인터랙티브 학습 앱</h1>
+        <p>노란 입력창에 현대어 풀이를 직접 적어보고 [💡 모범 답안 확인]을 눌러 비교해 보세요!</p>
+    </header>
+
+    <!-- Tab Navigation (5 Tabs) -->
+    <div class="tabs">
+        <button type="button" class="tab-btn active" onclick="switchTab('tab1', this)">가. 동짓달 기나긴 밤을</button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab2', this)">나. 어져 내일이야</button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab3', this)">다. 논밭 갈아 기음 매고</button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab4', this)">라. 댁들에 동난지이 사오</button>
+        <button type="button" class="tab-btn" onclick="switchTab('tab5', this)">05. 형성 평가</button>
+    </div>
+
+    <!-- Tab 1: 가. 동짓달 기나긴 밤을 -->
+    <div id="tab1" class="content-card active">
+        <h2>가. 황진이 - &lt;동지ᄉᄃᆞᆯ 기나긴 밤을&gt;</h2>
+        
+        <div class="header-row">
+            <h3>1. 원문 및 학생 현대어 풀이 연습</h3>
+            <div class="btn-group">
+                <button type="button" class="btn-toggle" onclick="toggleOrigin(this)">원문 숨기기</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 12%;">구분</th>
+                    <th class="col-origin" style="width: 44%;">시조 원문 (중세 국어 표기)</th>
+                    <th style="width: 44%;">내가 쓰는 현대어 풀이 & 정답 확인</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center;"><b>초장</b></td>
+                    <td class="col-origin">冬至(동지)ᄉᄃᆞᆯ 기나긴 밤을 한허리를 버혀 내여</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">동짓달 기나긴 밤을 한허리를 베어 내어</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>중장</b></td>
+                    <td class="col-origin">春風(춘풍) 니불 아레 서리서리 너헛다가</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">봄바람 이불 아래에 서리서리 넣었다가</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>종장</b></td>
+                    <td class="col-origin">어론 님 오신 날 밤이여든 구뷔구뷔 펴리라</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">정든 임 오신 날 밤이거든 굽이굽이 펴리라</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 20px;">2. 구절 분석</h3>
+        <ul class="analysis-list">
+            <li><strong>冬至(동지)ᄉᄃᆞᆯ 기나긴 밤을 한 허리를 버혀 내여:</strong> 추상적 개념인 '시간'을 구체적인 사물처럼 시각화하여 베어낸다는 기발한 발상(추상적 개념의 구체화).</li>
+            <li><strong>春風(춘풍) 니불 아레:</strong> 임이 오실 때까지 정성을 다해 사랑을 준비하는 공간으로, 춘풍(봄바람)은 따뜻한 이미지를 형성함.</li>
+            <li><strong>서리서리 / 구뷔구뷔:</strong> 순우리말 음성 상징어(의태어)를 다양하게 활용하여 우리말의 미감과 임을 기다리는 섬세한 정조를 효과적으로 드러냄.</li>
+            <li><strong>어론 님 오신 날 밤이여든 구뷔구뷔 펴리라:</strong> 임과 함께하는 긍정적 시간에 잘라둔 밤을 덧붙여 오랫동안 같이 있고 싶어 하는 화자의 애타는 기다림과 애정이 표현됨.</li>
+        </ul>
+
+        <h3 style="margin-top: 20px;">3. 작품 정리 <small style="font-size: 0.85rem; color: #777;">(보라색 상자를 클릭하면 정답이 보입니다)</small></h3>
+        <table>
+            <tbody>
+                <tr>
+                    <th style="width: 25%;">갈래</th>
+                    <td>(<span class="blank" onclick="toggleBlank(this)">평</span>)시조, (<span class="blank" onclick="toggleBlank(this)">기녀</span>)시조</td>
+                </tr>
+                <tr>
+                    <th>성격</th>
+                    <td>연정적, 감각적, (<span class="blank" onclick="toggleBlank(this)">서정적</span>)</td>
+                </tr>
+                <tr>
+                    <th>제재</th>
+                    <td>동짓달 (<span class="blank" onclick="toggleBlank(this)">기나긴 밤</span>), (<span class="blank" onclick="toggleBlank(this)">임</span>)을 향한 기다림</td>
+                </tr>
+                <tr>
+                    <th>주제</th>
+                    <td>(<span class="blank" onclick="toggleBlank(this)">임</span>)을 향한 간절한 그리움과 연모의 정</td>
+                </tr>
+                <tr>
+                    <th>특징</th>
+                    <td>
+                        • 추상적인 (<span class="blank" onclick="toggleBlank(this)">시간</span>)을 구체적인 사물로 표현하는 기발한 발상을 보여줌.<br>
+                        • (<span class="blank" onclick="toggleBlank(this)">서리서리</span>), (<span class="blank" onclick="toggleBlank(this)">굽이굽이</span>) 등 다채로운 의태어를 활용함.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tab 2: 나. 어져 내일이야 -->
+    <div id="tab2" class="content-card">
+        <h2>나. 황진이 - &lt;어져 내일이야&gt;</h2>
+
+        <div class="header-row">
+            <h3>1. 원문 및 학생 현대어 풀이 연습</h3>
+            <div class="btn-group">
+                <button type="button" class="btn-toggle" onclick="toggleOrigin(this)">원문 숨기기</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 12%;">구분</th>
+                    <th class="col-origin" style="width: 44%;">시조 원문 (중세 국어 표기)</th>
+                    <th style="width: 44%;">내가 쓰는 현대어 풀이 & 정답 확인</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center;"><b>초장</b></td>
+                    <td class="col-origin">어져 내 일이야 그릴 줄을 모ㄹᄃᆞ냐</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">아아, 내가 한 일이여! 그리워할 줄을 몰랐더냐</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>중장</b></td>
+                    <td class="col-origin">있으라 ᄒᆞ더면 가랴마ᄂᆞᆫ 제 구ᄐᆡ야</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">있으라 했다면 갔을까마는 제 구태여</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>종장</b></td>
+                    <td class="col-origin">보내고 그리ᄂᆞᆫ 情(정)은 나도 몰라 ᄒᆞ노라</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">보내고 그리워하는 정은 나도 몰라 하노라</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 20px;">2. 구절 분석</h3>
+        <ul class="analysis-list">
+            <li><strong>어져:</strong> 감탄사를 통해 이별 후 겪는 강한 후회와 탄식의 정조를 집약함.</li>
+            <li><strong>그릴 줄을 모ㄹᄃᆞ냐:</strong> 이별 후에 이토록 그리움으로 고통받을 줄 몰랐다는 자책과 안타까움의 표현.</li>
+            <li>
+                <strong>제 구ᄐᆡ야:</strong> 행간 걸림(중의적 배치)이 드러나는 부분.
+                <div class="sub-list">
+                    - 중장의 끝에 걸치면: '님이 굳이 떠났겠냐마는'<br>
+                    - 종장의 처음에 걸치면: '내가 굳이 임을 보내놓고'로 해석되어 이별 직전 화자의 만류와 자존심 사이의 복잡한 심리를 효과적으로 보여줌.
+                </div>
+            </li>
+            <li><strong>보내고 그리ᄂᆞᆫ 정:</strong> 자존심 때문에 임을 잡지 못하고 보낸 뒤 겪는 솔직한 내면 심리.</li>
+        </ul>
+
+        <h3 style="margin-top: 20px;">3. 작품 정리 <small style="font-size: 0.85rem; color: #777;">(보라색 상자를 클릭하면 정답이 보입니다)</small></h3>
+        <table>
+            <tbody>
+                <tr>
+                    <th style="width: 25%;">갈래</th>
+                    <td>(<span class="blank" onclick="toggleBlank(this)">평</span>)시조, (<span class="blank" onclick="toggleBlank(this)">기녀</span>)시조</td>
+                </tr>
+                <tr>
+                    <th>성격</th>
+                    <td>애상적, 자책적, (<span class="blank" onclick="toggleBlank(this)">영탄적</span>)</td>
+                </tr>
+                <tr>
+                    <th>제재</th>
+                    <td>(<span class="blank" onclick="toggleBlank(this)">이별</span>) 후의 그리움과 후회</td>
+                </tr>
+                <tr>
+                    <th>주제</th>
+                    <td>임과의 (<span class="blank" onclick="toggleBlank(this)">이별</span>)에 대한 후회와 간절한 그리움</td>
+                </tr>
+                <tr>
+                    <th>특징</th>
+                    <td>
+                        • 감탄사를 통해 (<span class="blank" onclick="toggleBlank(this)">탄식</span>)과 후회의 정조를 극대화함.<br>
+                        • '제 구태여'의 (<span class="blank" onclick="toggleBlank(this)">행간 걸림</span>)을 통해 세련된 심리 묘사를 보여줌.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tab 3: 다. 논밭 갈아 기음 매고 -->
+    <div id="tab3" class="content-card">
+        <h2>다. 작자 미상 - &lt;논밭 갈아 기음 매고&gt;</h2>
+
+        <div class="header-row">
+            <h3>1. 본문 및 학생 현대어 풀이 연습</h3>
+            <div class="btn-group">
+                <button type="button" class="btn-toggle" onclick="toggleOrigin(this)">원문 숨기기</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 12%;">구분</th>
+                    <th class="col-origin" style="width: 44%;">원문</th>
+                    <th style="width: 44%;">내가 쓰는 현대어 풀이 & 정답 확인</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center;"><b>초장</b></td>
+                    <td class="col-origin">논밭 갈아 김 매고 베잠방이 대님 쳐 신들매고</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">논밭을 갈아 김(잡풀)을 매고, 베잠방이 대님을 매어 신끈을 팽팽하게 묶고</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>중장</b></td>
+                    <td class="col-origin">낫 갈아 허리에 차고 도끼 벼려 둘러메고 茂林 山中(무림산중) 들어가서 삭정이 마른 섶을 베고 잘라서 지게에 짊어 지팡이 받쳐 놓고 샘을 찾아가서 점심 도시락 비우고 곰방대를 톡톡 떨어 잎담배 피워 물고 콧노래 조올다가,</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">낫을 날카롭게 갈아 허리에 차고 도끼를 잘 갈아 둘러메고, 울창한 산속으로 들어가 죽은 나무 가지를 베기도 하고 자르기도 하여 지게에 짊어진 뒤 지팡이를 받쳐 놓고, 샘을 찾아가 점심 도시락을 다 비우고 곰방대를 툭툭 털어 잎담배 피워 물고 콧노래 흥얼거리며 졸다가</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>종장</b></td>
+                    <td class="col-origin">석양이 재 넘어갈 제 어깨를 추스르며 긴 소리 짧은 소리 하며 어이 갈꼬 하더라.</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">해가 고개를 넘어갈 때(해질녘) 어깨를 추스르고, 긴 소리 짧은 소리(노래/흥얼거림)를 하며 ‘어이 갈꼬’ 하면서 돌아가더라.</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 20px;">2. 주요 시어 및 시구 풀이</h3>
+        <ul class="analysis-list">
+            <li><strong>김:</strong> 논밭에 난 잡풀</li>
+            <li><strong>베잠방이 / 대님 / 신들매고:</strong> 베잠방이(남자용 짧은 바지), 대님(남자들이 바지를 입은 뒤에 그 가랑이의 끝 쪽을 접어서 발목을 졸라매는 끈), 신들매[신들메](신이 벗어지지 않도록 잡아매는 끈). 농사일에 맞춘 활동적이고 소박한 차림새.</li>
+            <li><strong>중장 전체 (농부의 다양한 일과):</strong> 하층 농민의 생활상을 열거를 통해 사실적이고 생동감 있게 표현.</li>
+            <li><strong>종장 (석양이 재 넘어갈 제 ~):</strong> 저녁 무렵 일을 마치고 집으로 돌아오는 농민의 풍류와 여유로운 서민적 삶을 진솔하게 형상화.</li>
+        </ul>
+
+        <h3 style="margin-top: 20px;">3. 작품 정리 <small style="font-size: 0.85rem; color: #777;">(보라색 상자를 클릭하면 정답이 보입니다)</small></h3>
+        <table>
+            <tbody>
+                <tr>
+                    <th style="width: 25%;">갈래</th>
+                    <td>(<span class="blank" onclick="toggleBlank(this)">사설</span>)시조</td>
+                </tr>
+                <tr>
+                    <th>성격</th>
+                    <td>사실적, (<span class="blank" onclick="toggleBlank(this)">낙천적</span>)</td>
+                </tr>
+                <tr>
+                    <th>제재</th>
+                    <td>농부의 (<span class="blank" onclick="toggleBlank(this)">하루 일과</span>) 및 농사일</td>
+                </tr>
+                <tr>
+                    <th>주제</th>
+                    <td>바쁜 농촌 일상 속에서 느끼는 소박한 (<span class="blank" onclick="toggleBlank(this)">여유</span>)와 (<span class="blank" onclick="toggleBlank(this)">흥취</span>)</td>
+                </tr>
+                <tr>
+                    <th>특징</th>
+                    <td>
+                        • (<span class="blank" onclick="toggleBlank(this)">열거법</span>)을 활용하여 농부의 쉴 틈 없이 바쁜 하루 일과를 역동적이고 생동감 있게 표현.<br>
+                        • 고된 노동의 현장을 긍정적이고 낙천적인 태도로 형상화.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tab 4: 라. 댁들에 동난지이 사오 -->
+    <div id="tab4" class="content-card">
+        <h2>라. 작자 미상 - &lt;댁들에 동난지이 사오&gt;</h2>
+
+        <div class="header-row">
+            <h3>1. 원문 및 학생 현대어 풀이 연습</h3>
+            <div class="btn-group">
+                <button type="button" class="btn-toggle" onclick="toggleOrigin(this)">원문 숨기기</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 12%;">구분</th>
+                    <th class="col-origin" style="width: 44%;">시조 원문 (중세 국어 표기)</th>
+                    <th style="width: 44%;">내가 쓰는 현대어 풀이 & 정답 확인</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center;"><b>초장</b></td>
+                    <td class="col-origin">ᄃᆡᆨ들에 동난지이 사오 저 쟝스야 네 황후 긔 무서시라 웨ᄂᆞᆫ다 사쟈</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">댁들(사람들)아 동난지이 사오 저 장사야 네 물건 그 무엇이라 외치는가 사자</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>중장</b></td>
+                    <td class="col-origin">외골 내육(外骨 內肉) 양목(兩目)이 상천(上天) 전행(前行) 후행(後行) 소(小)아리 팔족(八足) 대(大)아리 이족(二足) 청장(靑醬) 흑장(黑醬) ᄋᆞ스슥 ᄒᆞᄂᆞᆫ 동난지이 사오</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">밖은 뼈 안엔 살 두 눈은 하늘 앞뒤로 움직이는 작은 다리 여덟 큰 다리 둘 청장 흑장 아스슥 하는 동난지이 사오</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;"><b>종장</b></td>
+                    <td class="col-origin">쟝스야 하 거복이 웨지 말고 게젓이라 ᄒᆞ렴은</td>
+                    <td>
+                        <textarea class="trans-input" placeholder="직접 현대어로 풀이해 보세요..."></textarea>
+                        <button type="button" class="btn-check-trans" onclick="toggleAnswer(this)">💡 모범 답안 확인</button>
+                        <div class="model-answer">장사야, 너무 거북하게 외치지 말고 게젓이라 하려무나</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 20px;">2. 구절 분석</h3>
+        <ul class="analysis-list">
+            <li><strong>ᄃᆡᆨ들에 동난지이 사오:</strong> 시장의 장사꾼이 호객 행위를 하는 소리로 시작하여 현장감 있는 분위기를 자아냄.</li>
+            <li><strong>외골 내육(外骨 內肉) 양목(兩目)이 상천(上天) 전행(前行) 후행(後行) 소(小)아리 팔족(八足) 대(大)아리 이족(二足) 청장(靑醬) 흑장(黑醬):</strong> '게'라는 쉬운 대상을 괜히 과장되고 어려운 한자어를 써서 지식인 체하며 설명함(현학적 태도).</li>
+            <li><strong>ᄋᆞ스슥:</strong> 게젓의 아삭한 식감을 나타낸 음성 상징어로 활기찬 시장의 맛과 생생함을 더해 줌.</li>
+            <li><strong>하 거복이 웨지 말고 게젓이라 ᄒᆞ렴은:</strong> 잘난 척하며 쉬운 물건을 부풀리는 장사꾼의 통속성과 현학성을 꼬집으며 웃음을 유발함(풍자와 해학).</li>
+        </ul>
+
+        <h3 style="margin-top: 20px;">3. 작품 정리 <small style="font-size: 0.85rem; color: #777;">(보라색 상자를 클릭하면 정답이 보입니다)</small></h3>
+        <table>
+            <tbody>
+                <tr>
+                    <th style="width: 25%;">갈래</th>
+                    <td>(<span class="blank" onclick="toggleBlank(this)">사설</span>)시조</td>
+                </tr>
+                <tr>
+                    <th>성격</th>
+                    <td>해학적, 희화적, (<span class="blank" onclick="toggleBlank(this)">풍자적</span>), (<span class="blank" onclick="toggleBlank(this)">대화체</span>)</td>
+                </tr>
+                <tr>
+                    <th>제재</th>
+                    <td>(<span class="blank" onclick="toggleBlank(this)">동난지이(게젓)</span>) 장사꾼</td>
+                </tr>
+                <tr>
+                    <th>주제</th>
+                    <td>현학적이고 과장된 태도에 대한 (<span class="blank" onclick="toggleBlank(this)">풍자</span>)와 해학</td>
+                </tr>
+                <tr>
+                    <th>특징</th>
+                    <td>
+                        • 장사꾼과 손님 사이의 (<span class="blank" onclick="toggleBlank(this)">대화</span>) 구조로 시상을 전개함.<br>
+                        • 어려운 한자어로 쉬운 사물을 부풀려 말하는 장사꾼의 (<span class="blank" onclick="toggleBlank(this)">현학적 태도</span>)를 풍자함.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tab 5: 05. 형성 평가 -->
+    <div id="tab5" class="content-card">
+        <h2>05. 형성 평가</h2>
+
+        <!-- Quiz 1 -->
+        <div class="quiz-item">
+            <label>1. &lt;동짓달 기나긴 밤을&gt;에서 화자가 '밤'이라는 비물질적·추상적 대상을 눈에 보이는 것처럼 잘라내고 펴는 행위로 표현한 시상 전개 방식을 쓰시오.</label>
+            <input type="text" id="q1" class="input-text" placeholder="답안을 입력하세요 (예: 추상적 개념의 구체화)">
+            <button type="button" class="btn-submit" onclick="checkQuiz1()">정답 확인</button>
+            <div id="feedback1" class="feedback"></div>
+        </div>
+
+        <!-- Quiz 2 -->
+        <div class="quiz-item">
+            <label>2. &lt;댁들에 동난지이 사오&gt;의 종장에서 손님이 장사꾼에게 건네는 말에 나타난 풍자의 대상(또는 비판하는 태도)이 무엇인지 서술하시오.</label>
+            <textarea id="q2" class="input-text" rows="3" placeholder="답안을 작성해보세요."></textarea>
+            <button type="button" class="btn-submit" onclick="checkQuiz2()">모범 답안 확인</button>
+            <div id="feedback2" class="feedback"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Direct Tab Switch Function
+    function switchTab(targetId, btnElement) {
+        var cards = document.getElementsByClassName('content-card');
+        for (var i = 0; i < cards.length; i++) {
+            cards[i].classList.remove('active');
+            cards[i].style.display = 'none';
+        }
+
+        var buttons = document.getElementsByClassName('tab-btn');
+        for (var j = 0; j < buttons.length; j++) {
+            buttons[j].classList.remove('active');
+        }
+
+        var targetCard = document.getElementById(targetId);
+        if (targetCard) {
+            targetCard.classList.add('active');
+            targetCard.style.display = 'block';
+        }
+
+        if (btnElement) {
+            btnElement.classList.add('active');
+        }
+    }
+
+    // 2. Toggle Model Answer Display
+    function toggleAnswer(btn) {
+        var answerBox = btn.nextElementSibling;
+        if (answerBox) {
+            if (answerBox.style.display === 'block') {
+                answerBox.style.display = 'none';
+                btn.textContent = '💡 모범 답안 확인';
+            } else {
+                answerBox.style.display = 'block';
+                btn.textContent = '🙈 모범 답안 숨기기';
+            }
+        }
+    }
+
+    // 3. Toggle Original Text Visibility
+    function toggleOrigin(btn) {
+        var card = btn.closest('.content-card');
+        if (!card) return;
+
+        var cols = card.querySelectorAll('.col-origin');
+        if (cols.length === 0) return;
+
+        var isHidden = cols[0].style.display === 'none';
+
+        for (var i = 0; i < cols.length; i++) {
+            cols[i].style.display = isHidden ? '' : 'none';
+        }
+
+        btn.textContent = isHidden ? '원문 숨기기' : '원문 보기';
+    }
+
+    // 4. Toggle Blank Pill Answer Reveal
+    function toggleBlank(element) {
+        element.classList.toggle('revealed');
+    }
+
+    // Quiz 1 Evaluation
+    function checkQuiz1() {
+        const ans = document.getElementById('q1').value.trim();
+        const feedback = document.getElementById('feedback1');
+        feedback.style.display = 'block';
+
+        if (ans.includes('구체화') || ans.includes('시각화') || ans.includes('구상화')) {
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = '✨ <b>정답입니다!</b><br>정답: 추상적 개념의 구체화 (또는 시간의 시각화/구체화)';
+        } else {
+            feedback.className = 'feedback incorrect';
+            feedback.innerHTML = '❌ <b>다시 생각해보세요.</b><br>정답: 추상적 개념의 구체화 (또는 시간의 시각화/구체화)';
+        }
+    }
+
+    // Quiz 2 Evaluation
+    function checkQuiz2() {
+        const userAns = document.getElementById('q2').value.trim();
+        const feedback = document.getElementById('feedback2');
+        feedback.style.display = 'block';
+        
+        let isMatch = userAns.includes('현학') || userAns.includes('한자') || userAns.includes('과장') || userAns.includes('허세');
+        
+        feedback.className = 'feedback correct';
+        feedback.innerHTML = `
+            ${isMatch ? '✨ <b>잘 작성하셨습니다! 아래 모범 답안과 비교해보세요.</b><br>' : '💡 <b>모범 답안을 확인해보세요.</b><br>'}
+            <b>[모범 답안]</b><br>
+            쉬운 표현('게젓')을 두고 어려운 한자어를 남발하며 과장하는 장사꾼의 현학적인 태도(허세)
+        `;
+    }
+</script>
+
+</body>
+</html>
